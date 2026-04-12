@@ -1,0 +1,9 @@
+*.exe
+*.out
+*.app
+*.o
+*.obj
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
