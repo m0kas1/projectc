@@ -4,85 +4,109 @@
 
 using namespace std;
 
-// Перечисляемый тип
-enum Gender { MALE = 0, FEMALE = 1 };
+enum Gen { M, W };
 
-// Вложенная структура
 struct Date {
-    int day;
-    int month;
-    int year;
+    int d;
+    int m;
+    int y;
 };
 
-// Анкета ребенка (Вариант 11)
 struct Child {
     char name[50];
-    Gender gender;
-    int height;
-    Date birthDate;
+    Gen gen;
+    int h;
+    Date bdate;
 };
 
-// =========================================================
-// ЗАДАНИЕ 1: Функция обновления данных из текстового файла
-// =========================================================
-void updateGenderFromTextFile(Child arr[], int size, const char* filename) {
-    ifstream fin(filename);
-    if (!fin.is_open()) {
-        cout << "Ошибка: не удалось открыть текстовый файл " << filename << endl;
-        return;
+void pArr(Child arr[], int sz) {
+    for(int i = 0; i < sz; i++) {
+        cout << arr[i].name << " | " << (arr[i].gen == M ? "M" : "W") << " | " 
+             << arr[i].h << " | " << arr[i].bdate.d << "." << arr[i].bdate.m << "." << arr[i].bdate.y << "\n";
     }
+    cout << "\n";
+}
 
-    char tempName[50];
-    int genderVal;
+void mkTxt() {
+    ofstream f(".\\data.txt");
+    f << "Иванов 1\n";
+    f << "Смирнова 0\n";
+    f << "Кузнецов 1\n";
+    f.close();
+}
 
-    // Считываем имя и пол (0 или 1) из файла построчно
-    while (fin >> tempName >> genderVal) {
-        // Ищем ребенка с таким же именем в массиве
-        for (int i = 0; i < size; ++i) {
-            if (strcmp(arr[i].name, tempName) == 0) {
-                arr[i].gender = (Gender)genderVal; // Обновляем пол
-                break; // Переходим к следующей строке файла
+void updTxt(Child arr[], int sz) {
+    ifstream f(".\\data.txt");
+    if(!f.is_open()) return;
+    
+    char n[50];
+    int g;
+    
+    while(f >> n >> g) {
+        for(int i = 0; i < sz; i++) {
+            if(strcmp(arr[i].name, n) == 0) {
+                arr[i].gen = (g == 0) ? M : W;
+                break;
             }
         }
     }
-    fin.close();
-    cout << "Данные успешно обновлены из текстового файла.\n";
+    f.close();
 }
 
-// Вспомогательная функция для вывода массива
-void printArray(Child arr[], int size) {
-    for (int i = 0; i < size; ++i) {
-        cout << "Фамилия: " << arr[i].name 
-             << "\t| Пол: " << (arr[i].gender == MALE ? "Муж (0)" : "Жен (1)") 
-             << "\t| Рост: " << arr[i].height 
-             << "\t| Дата: " << arr[i].birthDate.day << "." 
-             << arr[i].birthDate.month << "." 
-             << arr[i].birthDate.year << endl;
+void wrBin(Child arr[], int sz) {
+    ofstream f(".\\data.bin", ios::binary);
+    if(f.is_open()) {
+        f.write((char*)arr, sz * sizeof(Child));
+        f.close();
     }
-    cout << "--------------------------------------------------------\n";
+}
+
+void rdBin(Child arr[], int &sz) {
+    ifstream f(".\\data.bin", ios::binary);
+    if(f.is_open()) {
+        f.seekg(0, ios::end);
+        int b = f.tellg();
+        sz = b / sizeof(Child);
+        f.seekg(0, ios::beg);
+        
+        f.read((char*)arr, b);
+        f.close();
+    }
 }
 
 int main() {
-    setlocale(LC_ALL, "ru_RU.UTF-8");
-
-    const int SIZE = 4;
-    // Инициализация массива. 
-    // Намеренно поставим всем "Жен (1)", чтобы проверить, как файл обновит мальчиков.
-    Child children[SIZE] = {
-        {"Ivanov", FEMALE, 140, {15, 5, 2010}},
-        {"Petrova", FEMALE, 135, {22, 8, 2011}},
-        {"Sidorov", FEMALE, 142, {10, 12, 2010}},
-        {"Smirnova", FEMALE, 138, {5, 3, 2012}}
+    Child d[20] = {
+        {"Иванов", M, 145, {15, 4, 2014}},
+        {"Смирнова", W, 150, {10, 5, 2014}},
+        {"Кузнецов", M, 160, {12, 1, 2013}},
+        {"Попова", W, 148, {22, 11, 2014}},
+        {"Васильев", M, 130, {5, 6, 2015}},
+        {"Петрова", W, 152, {14, 8, 2014}},
+        {"Соколов", M, 155, {19, 2, 2014}},
+        {"Михайлова", W, 140, {30, 10, 2015}},
+        {"Новиков", M, 142, {8, 3, 2014}},
+        {"Федорова", W, 151, {2, 7, 2014}},
+        {"Морозов", M, 138, {11, 12, 2015}},
+        {"Волкова", W, 146, {25, 9, 2014}},
+        {"Алексеев", M, 165, {4, 4, 2012}},
+        {"Лебедева", W, 135, {17, 1, 2016}},
+        {"Семенов", M, 150, {21, 5, 2014}},
+        {"Егорова", W, 149, {9, 2, 2014}},
+        {"Павлов", M, 158, {28, 8, 2013}},
+        {"Козлова", W, 147, {16, 6, 2014}},
+        {"Степанов", M, 132, {3, 11, 2016}},
+        {"Николаева", W, 154, {1, 3, 2014}}
     };
 
-    cout << "--- Исходные данные массива ---\n";
-    printArray(children, SIZE);
-
-    // Выполнение Задания 1
-    updateGenderFromTextFile(children, SIZE, "C:\\Users\\serge\\Desktop\\practica\\data.txt");
+    mkTxt();
+    updTxt(d, 20);
+    wrBin(d, 20);
     
-    cout << "\n--- Массив после чтения updates.txt ---\n";
-    printArray(children, SIZE);
+    Child d2[20];
+    int sz2 = 0;
+    rdBin(d2, sz2);
+    
+    pArr(d2, sz2);
 
     return 0;
 }
