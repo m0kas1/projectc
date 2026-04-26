@@ -1,127 +1,161 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include <algorithm>
 
 using namespace std;
 
-struct Date
-{
-    int day;
-    int month;
-    int year;
+enum Gen { M, W };
+
+struct Date {
+    int d;
+    int m;
+    int y;
 };
 
-
-struct Child
-{
-    string surname;
+struct Child {
     string name;
-    char gender;
-    double height;
-    Date birthday;
+    Gen gen;
+    int h;
+    Date bdate;
 };
 
+void printChild(Child c) {
+    cout << c.name << " | " << (c.gen == M ? "M" : "W") << " | " 
+         << c.h << " | " << c.bdate.d << "." << c.bdate.m << "." << c.bdate.y << "\n";
+}
 
-bool compareByDate(const Child& a, const Child& b) {
-    if (a.birthday.year != b.birthday.year) {
-        return a.birthday.year < b.birthday.year; 
+void printArr(Child arr[], int size) {
+    for(int i = 0; i < size; i++) {
+        printChild(arr[i]);
     }
-    if (a.birthday.month != b.birthday.month) {
-        return a.birthday.month < b.birthday.month;
-    }
+    cout << "\n";
+}
 
-    return a.birthday.day < b.birthday.day;
+void avgHeight12yoW(Child arr[], int size) {
+    int sum = 0;
+    int count = 0;
+    for(int i = 0; i < size; i++) {
+        if(arr[i].gen == W && (2026 - arr[i].bdate.y) == 12) {
+            sum += arr[i].h;
+            count++;
+        }
+    }
+    if(count > 0) cout << "Avg height: " << (double)sum / count << "\n\n";
+    else cout << "No 12yo girls\n\n";
+}
+
+bool isYounger(Date d1, Date d2) {
+    if(d1.y != d2.y) return d1.y > d2.y;
+    if(d1.m != d2.m) return d1.m > d2.m;
+    return d1.d > d2.d;
+}
+
+void top3YoungestBoys(Child in[], int size, Child out[], int &outSize) {
+    Child boys[20];
+    int bCount = 0;
+    for(int i = 0; i < size; i++) {
+        if(in[i].gen == M) {
+            boys[bCount] = in[i];
+            bCount++;
+        }
+    }
+    
+    for(int i = 0; i < bCount - 1; i++) {
+        for(int j = 0; j < bCount - i - 1; j++) {
+            if(!isYounger(boys[j].bdate, boys[j+1].bdate)) {
+                Child tmp = boys[j];
+                boys[j] = boys[j+1];
+                boys[j+1] = tmp;
+            }
+        }
+    }
+    
+    outSize = (bCount < 3) ? bCount : 3;
+    for(int i = 0; i < outSize; i++) {
+        out[i] = boys[i];
+    }
+}
+
+void sortByDate(Child arr[], int size) {
+    for(int i = 0; i < size - 1; i++) {
+        for(int j = 0; j < size - i - 1; j++) {
+            if(isYounger(arr[j].bdate, arr[j+1].bdate)) {
+                Child tmp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = tmp;
+            }
+        }
+    }
+}
+
+void findByName(Child arr[], int size, string target) {
+    for(int i = 0; i < size; i++) {
+        if(arr[i].name == target) {
+            printChild(arr[i]);
+        }
+    }
+    cout << "\n";
+}
+
+void updateChild(Child &c, int newHeight) {
+    c.h = newHeight;
+}
+
+void filterByMonth(Child in[], int size, int targetMonth, Child out[], int &outSize) {
+    outSize = 0;
+    for(int i = 0; i < size; i++) {
+        if(in[i].bdate.m == targetMonth) {
+            out[outSize] = in[i];
+            outSize++;
+        }
+    }
+}
+
+void wrapFilter(Child in[], int size, int targetMonth) {
+    Child res[20];
+    int resSize = 0;
+    filterByMonth(in, size, targetMonth, res, resSize);
+    printArr(res, resSize);
 }
 
 int main() {
-    setlocale(LC_ALL, "");
-    
-    Child children[20] = {
-        {"Иванов", "Иван", 'M', 150.5, {15, 5, 2012}},
-        {"Смирнова", "Анна", 'F', 152.0, {10, 8, 2014}},
-        {"Петров", "Алексей", 'M', 148.0, {22, 11, 2015}},
-        {"Сидорова", "Мария", 'F', 149.5, {5, 3, 2014}}, 
-        {"Кузнецов", "Дмитрий", 'M', 155.0, {1, 1, 2011}},
-        {"Попова", "Екатерина", 'F', 145.0, {12, 12, 2015}},
-        {"Васильев", "Михаил", 'M', 160.2, {20, 5, 2010}},
-        {"Соколова", "Елена", 'F', 151.3, {18, 7, 2014}},  
-        {"Михайлов", "Артем", 'M', 142.0, {30, 9, 2016}},  
-        {"Новикова", "Ольга", 'F', 158.0, {8, 4, 2011}},
-        {"Федоров", "Максим", 'M', 140.5, {14, 2, 2017}}, 
-        {"Морозова", "Наталья", 'F', 150.0, {25, 10, 2013}},
-        {"Волков", "Даниил", 'M', 153.4, {3, 6, 2013}},
-        {"Алексеева", "Дарья", 'F', 154.1, {17, 8, 2014}},
-        {"Лебедев", "Илья", 'M', 139.0, {5, 12, 2017}},  
-        {"Семенова", "Виктория", 'F', 148.8, {21, 1, 2015}},
-        {"Егоров", "Никита", 'M', 156.7, {9, 11, 2012}},
-        {"Павлова", "Алиса", 'F', 152.5, {28, 5, 2014}}, 
-        {"Козлов", "Роман", 'M', 147.2, {11, 3, 2016}}, 
-        {"Степанова", "Полина", 'F', 146.0, {19, 9, 2015}}
+    Child data[20] = {
+        {"Иванов", M, 145, {15, 4, 2014}},
+        {"Смирнова", W, 150, {10, 5, 2014}},
+        {"Кузнецов", M, 160, {12, 1, 2013}},
+        {"Попова", W, 148, {22, 11, 2014}},
+        {"Васильев", M, 130, {5, 6, 2015}},
+        {"Петрова", W, 152, {14, 8, 2014}},
+        {"Соколов", M, 155, {19, 2, 2014}},
+        {"Михайлова", W, 140, {30, 10, 2015}},
+        {"Новиков", M, 142, {8, 3, 2014}},
+        {"Федорова", W, 151, {2, 7, 2014}},
+        {"Морозов", M, 138, {11, 12, 2015}},
+        {"Волкова", W, 146, {25, 9, 2014}},
+        {"Алексеев", M, 165, {4, 4, 2012}},
+        {"Лебедева", W, 135, {17, 1, 2016}},
+        {"Семенов", M, 150, {21, 5, 2014}},
+        {"Егорова", W, 149, {9, 2, 2014}},
+        {"Павлов", M, 158, {28, 8, 2013}},
+        {"Козлова", W, 147, {16, 6, 2014}},
+        {"Степанов", M, 132, {3, 11, 2016}},
+        {"Николаева", W, 154, {1, 3, 2014}}
     };
 
-    for (int i = 0; i < 20; i++) {
-        cout << children[i].surname << " " << children[i].name << ", " << children[i].gender << ", " << children[i].height << " см, " << children[i].birthday.day << "." << children[i].birthday.month << "." << children[i].birthday.year << endl;
-    }
+    avgHeight12yoW(data, 20);
 
-    double sumhgtf = 0;
-    int countf = 0;
+    Child youngestBoys[3];
+    int boysSize = 0;
+    top3YoungestBoys(data, 20, youngestBoys, boysSize);
+    printArr(youngestBoys, boysSize);
 
-    for (int i = 0; i < 20; i++) {
-        if (children[i].birthday.year == 2014 && children[i].gender == 'F') {
-            sumhgtf += children[i].height;
-            countf++;                   
-        }
-    } 
+    sortByDate(data, 20);
+    printArr(data, 20);
+
+    findByName(data, 20, "Смирнова");
+
+    updateChild(data[0], 170);
     
-    if (countf > 0) {
-        double avghgtf = sumhgtf / countf;
-        cout << "Средний рост 12-летних девочек: " << avghgtf << " см" << endl;
-    } else {
-        cout << "Девочек подходящего возраста не найдено." << endl;
-    }
-
-    sort(children, children + 20, compareByDate);
-
-    cout << "\nДети, отсортированные по дате рождения:" << endl;
-    for (int i = 0; i < 20; i++) {
-        cout << children[i].surname << " " << children[i].name << ", " << children[i].gender << ", " << children[i].height << " см, " << children[i].birthday.day << "." << children[i].birthday.month << "." << children[i].birthday.year << endl;
-    }
-
-    string isur;
-    cout << "\nEnter surname: ";
-    cin >> isur;
-
-    bool found = false;
-    for (int i = 0; i < 20; i++) {
-        if (children[i].surname == isur) {
-            cout << children[i].surname << " " << children[i].name << ", " << children[i].gender << ", " << children[i].height << " см, " << children[i].birthday.day << "." << children[i].birthday.month << "." << children[i].birthday.year << endl;
-            found = true;
-        }
-    }
-
-    if (!found) {
-        cout << "ребенок с фамилией " << isur << " не найден." << endl;
-    }
-
-    int imonth;
-    cout << "\nвведи месяц (1-12): ";
-    cin >> imonth;
-
-    Child monthchild[20]; // Отдельный массив для результатов
-    int fcount = 0;       // Счетчик найденных детей
-
-    for (int i = 0; i < 20; i++) {
-        if (children[i].birthday.month == imonth) {
-            monthchild[fcount] = children[i]; // Копируем данные в новый массив
-            fcount++;
-        }
-    }
-
-    cout << "\nдети, родившиеся в " << imonth << " месяце:" << endl;
-    for (int i = 0; i < fcount; i++) {
-        cout << monthchild[i].surname << " " << monthchild[i].name << ", " << monthchild[i].gender << ", " << monthchild[i].height << " см, " << monthchild[i].birthday.day << "." << monthchild[i].birthday.month << "." << monthchild[i].birthday.year << endl;
-    }
+    wrapFilter(data, 20, 4);
 
     return 0;
 }
