@@ -95,6 +95,14 @@ public:
         return *this;
     }
 
+    T operator[](int index) const {
+        return data[index]; // Возвращаем элемент по индексу
+    }
+
+    int getCount() const {
+        return count;
+    }
+
     void print() const {
         std::cout << "{ ";
         for (int i = 0; i < count; ++i) {
@@ -204,6 +212,11 @@ int main() {
     TSet<Document*> docs;
     docs = docs + &p1;
     docs = docs + &c1;
+
+    for (int i = 0; i < docs.getCount(); ++i) {
+        docs[i]->printInfo();
+        std::cout << "Is classified: " << docs[i]->isClassified() << "\n\n";
+    }
     
     Document::printCount();
 
