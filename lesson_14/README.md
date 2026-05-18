@@ -1,4 +1,4 @@
-В файле image.png содержатся условия задач!
+![alt text](image.png)
 
 Объяснение кода:
 1 номер (https://docs.google.com/document/d/1YgBjjJC6mlZJB30amCAeFgg241sEYhtdQt3MklAjpO4/edit?usp=sharing)
